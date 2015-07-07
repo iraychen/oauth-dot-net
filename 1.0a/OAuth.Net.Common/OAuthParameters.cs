@@ -237,7 +237,22 @@ namespace OAuth.Net.Common
         /// </returns>
         public static OAuthParameters Parse(HttpRequest request, OAuthParameterSources sources)
         {
-            return OAuthParameters.DoParse(request.Headers[Constants.AuthorizationHeaderParameter], request.Headers[Constants.WwwAuthenticateHeaderParameter], request.Form, request.QueryString, sources, true);
+            NameValueCollection form = new NameValueCollection();
+
+            foreach (var key in request.Form.AllKeys)
+            {
+                var @value = request.Form[key];
+                form.Add(key, @value);
+            }
+
+            foreach (var key in request.Files.AllKeys)
+            {
+                var file = request.Files[key];
+                var @value = HttpUtility.UrlDecode(file.FileName);
+                form.Add(key, @value);
+            }
+
+            return OAuthParameters.DoParse(request.Headers[Constants.AuthorizationHeaderParameter], request.Headers[Constants.WwwAuthenticateHeaderParameter], form, request.QueryString, sources, true);
         }
 
         /// <summary>
